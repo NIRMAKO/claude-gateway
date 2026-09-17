@@ -1,0 +1,16 @@
+# Render blueprint — Claude Gateway
+# Deploy: Render Dashboard → New → Blueprint → point at this repo/folder
+services:
+  - type: web
+    name: claude-gateway
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GATEWAY_TOKEN
+        sync: false   # set manually in dashboard — the shared bearer token
+      - key: ANTHROPIC_API_KEY
+        sync: false   # set manually in dashboard — sk-ant-...
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-4-5
