@@ -28,6 +28,10 @@ from pydantic import BaseModel
 
 API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 GATEWAY_TOKEN = os.environ.get("GATEWAY_TOKEN", "")
+RTL_GUARD = """
+כל פלט בעברית: כיוון RTL מלא, ניסוח עסקי תקני, גרשיים עבריים (\u05f4/\u05f3) בראשי תיבות, רשימות עם תבליט בצד ימין, מספרים בפורמט לועזי רגיל. אין ניקוד אלא אם נתבקש. Hebrew output: full RTL direction, standard business wording, no manual digit reversal.
+"""
+
 DEFAULT_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-5")
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
 MAX_PROMPT_CHARS = 100_000
@@ -56,7 +60,9 @@ def call_anthropic(messages: List[Dict[str, str]], system: Optional[str],
     }
     body: Dict[str, Any] = {"model": model, "max_tokens": max_tokens, "messages": messages}
     if system:
-        body["system"] = system
+        body["system"] = RTL_GUARD + "\n" + system
+    else:
+        body["system"] = RTL_GUARD
     with httpx.Client(timeout=300) as client:
         r = client.post(ANTHROPIC_URL, headers=headers, json=body)
     if r.status_code != 200:
